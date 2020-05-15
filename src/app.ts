@@ -5,6 +5,11 @@ import userRouter from './routes/users';
 import urlRouter from './routes/url';
 // import main from './script';
 
+import { config } from 'dotenv';
+config();
+
+console.log(process.env.ACCESS_TOKEN_SECRET);
+
 const app: Application = express();
 app.use(express.json());
 
