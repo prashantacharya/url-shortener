@@ -49,6 +49,7 @@ export const signUp = async (
       'Refresh Token'
     );
 
+    delete newUser.password;
     res.status(201).send({
       status: 'Success',
       payload: newUser,
@@ -99,7 +100,7 @@ export const login = async (
       'Refresh Token'
     );
 
-    console.log(accessToken, refreshToken);
+    delete user.password;
 
     res.send({
       status: 'Success',

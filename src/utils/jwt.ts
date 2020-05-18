@@ -32,7 +32,7 @@ export const createToken = async (
 
 export const verifyToken = (token: string, secret: string) => {
   try {
-    const decodedInfo = verify(token, secret);
+    const decodedInfo: any = verify(token, secret);
     return decodedInfo;
   } catch (error) {
     if (error.name === 'TokenExpiredError')

@@ -1,17 +1,18 @@
 import express, { Application, Request, Response, NextFunction } from 'express';
 import createHttpError from 'http-errors';
+import cors from 'cors';
 import authRouter from './routes/auth';
 import userRouter from './routes/users';
 import urlRouter from './routes/url';
+
 // import main from './script';
 
 import { config } from 'dotenv';
 config();
 
-console.log(process.env.ACCESS_TOKEN_SECRET);
-
 const app: Application = express();
 app.use(express.json());
+app.use(cors());
 
 app.get('/', (req: Request, res: Response) => {
   res.send('App running successfully');

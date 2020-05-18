@@ -9,6 +9,11 @@ export const getAllUsers = async (
 ) => {
   try {
     const users = await prisma.users.findMany();
+
+    users.forEach((user) => {
+      delete user.password;
+    });
+
     res.status(200).send({
       status: 'Success',
       payload: users,
@@ -35,6 +40,7 @@ export const getUserById = async (
 
     if (!user) throw createHttpError(404, 'User not found');
 
+    delete user.password;
     res.status(200).send({
       status: 'Success',
       payload: user,
