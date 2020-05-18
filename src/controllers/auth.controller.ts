@@ -3,6 +3,7 @@ import createHttpError from 'http-errors';
 
 import prisma from '../database/init';
 import { createToken } from '../utils/jwt';
+import { sendMail, fillMailOptions } from '../utils/mailer';
 
 const ifUserExists = async (email: string) => {
   const user = await prisma.users.findOne({
@@ -27,7 +28,9 @@ export const signUp = async (
       data: userInfo,
     });
 
-    const accessToken = createToken(
+    await sendMail(fillMailOptions(newUser.email, newUser.id));
+
+    const accessToken = await createToken(
       {
         data: {
           id: newUser.id,
@@ -38,7 +41,7 @@ export const signUp = async (
       `${process.env.ACCESS_TOKEN_SECRET}`
     );
 
-    const refreshToken = createToken(
+    const refreshToken = await createToken(
       {
         data: {
           id: newUser.id,
