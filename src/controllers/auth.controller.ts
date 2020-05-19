@@ -3,7 +3,8 @@ import createHttpError from 'http-errors';
 
 import prisma from '../database/init';
 import { createToken } from '../utils/jwt';
-import { sendMail, fillMailOptions } from '../utils/mailer';
+import { sendMail, fillMailOptions, verifyMailTokens } from '../utils/mailer';
+import { decode } from 'jsonwebtoken';
 
 const ifUserExists = async (email: string) => {
   const user = await prisma.users.findOne({
@@ -79,7 +80,15 @@ export const login = async (
     if (!user || req.body.password !== user.password)
       throw createHttpError(400, 'Email or password do not match');
 
-    if (!user?.verified) throw createHttpError(403, 'Email not verified');
+    if (!user?.verified) {
+      await sendMail(fillMailOptions(user.email, user.id));
+      res
+        .status(403)
+        .send(
+          '<strong>Email not verified.</strong><br>Check your email for verification link.'
+        );
+      return;
+    }
 
     const accessToken = await createToken(
       {
@@ -113,5 +122,31 @@ export const login = async (
     });
   } catch (error) {
     next(error);
+  }
+};
+
+export const verifyEmail = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  if (req.params.token) {
+    try {
+      const userId = verifyMailTokens(req.params.token);
+      const user = await prisma.users.update({
+        where: { id: userId },
+        data: { verified: true },
+      });
+
+      if (!user) createHttpError(403, 'Authentication failed');
+
+      res.send('Email verified, you may now sign in.');
+    } catch (error) {
+      if (error.message === 'Token Expired') {
+        res.send('Verification link expired, sign in for another link.');
+      } else {
+        next(error);
+      }
+    }
   }
 };

@@ -35,11 +35,12 @@ export const mailTokens = (userId: number) => {
   }
 };
 
-export const verifyMailTokens = async (token: string) => {
+export const verifyMailTokens = (token: string) => {
   if (process.env.SMTP_SECRET) {
     try {
       const info: any = verify(token, process.env.SMTP_SECRET);
       if (info.scope === 'verification') return info.data;
+      else throw createHttpError(401, 'Invalid Token');
     } catch (error) {
       if (error.name === 'TokenExpiredError')
         throw createHttpError(401, 'Token Expired');
